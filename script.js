@@ -1,6 +1,18 @@
 let notes = document.getElementById("users-notes");
 let form = document.getElementById("notes-form");
 let notesResult = document.getElementById("notes-result");
+let getPeopleBtn = document.getElementById("get-people-btn");
+let peopleResultGet = document.getElementById("people-result-get");
+
+
+
+async function get_people() {
+    let response = await fetch("api/notes");
+    let data = await response.json();
+    peopleResultGet.textContent = data.notes;
+}
+getPeopleBtn.addEventListener("click", get_people);
+
 
 async function getNotes(e) {
     e.preventDefault()
@@ -23,4 +35,6 @@ async function getNotes(e) {
 }
 
 form.addEventListener("submit", getNotes)
+
+
 

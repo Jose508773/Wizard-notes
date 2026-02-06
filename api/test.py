@@ -15,3 +15,5 @@ async def add_person(body: dict = Body(...)):
     people["name"] = users_name
     people["age"] = users_age
     return {"people": people}
+
+

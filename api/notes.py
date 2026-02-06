@@ -13,5 +13,6 @@ async def add_notes(body: dict = Body(...)):
   
 
 
-
-    
+@app.get("/api/notes")
+async def get_notes():
+    return {"notes": notes}

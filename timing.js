@@ -10,6 +10,7 @@ let showPeopleBtn = document.getElementById("show-people-btn");
 
 
 
+
 async function add_person() {
     let name = nameInput.value;
     let age = ageInput.value;
@@ -22,11 +23,6 @@ async function add_person() {
     let data = await response.json();
     peopleResult.textContent = data.people;
 }
-
-
-
-
-
 
 
 
