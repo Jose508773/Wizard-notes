@@ -13,24 +13,18 @@ app.add_middleware(
 )
 
 
-@app.get("/api/test")
+@app.get("/api/test_ing")
 async def root(response: Response):
-
     response.headers["Cache-Control"] = "public, max-age=300"
-
-    return {"response": "ITs working!!!!!!!", "cached": True}
-
-
-
+    return {"response": "✅ API is working! Connection successful.", "cached": True}
 
 
 people = {}
-@app.post("/api/test")
+
+@app.post("/api/test_ing")
 async def add_person(body: dict = Body(...)):
     users_name = body.get("userName", "")
     users_age = body.get("userAge", 0)
     people["name"] = users_name
     people["age"] = users_age
-    return {"people": people}
-
-
+    return {"people": people, "message": "Person added successfully!"}

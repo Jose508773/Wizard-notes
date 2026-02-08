@@ -16,10 +16,10 @@ async function add_person() {
     let age = ageInput.value;
     let response = await fetch("api/test", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({userName: name, userAge: age})
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userName: name, userAge: age })
     })
-    
+
     let data = await response.json();
     peopleResult.textContent = data.people;
 }
@@ -32,5 +32,6 @@ async function get_time() {
     let data = await response.json();
     result.textContent = data.response;
 }
+
 
 btn.addEventListener("click", get_time);
