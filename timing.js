@@ -14,21 +14,27 @@ let showPeopleBtn = document.getElementById("show-people-btn");
 async function add_person() {
     let name = nameInput.value;
     let age = ageInput.value;
-    let response = await fetch("api/test", {
+    let response = await fetch("/api/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userName: name, userAge: age })
-    })
-
+    });
+    if (!response.ok) {
+        peopleResult.textContent = "Error: " + response.status + " - " + (await response.text());
+        return;
+    }
     let data = await response.json();
-    peopleResult.textContent = data.people;
+    peopleResult.textContent = JSON.stringify(data.people);
 }
 
 
 
 async function get_time() {
-    let response = await fetch("api/test");
-
+    let response = await fetch("/api/test");
+    if (!response.ok) {
+        result.textContent = "Error: " + response.status;
+        return;
+    }
     let data = await response.json();
     result.textContent = data.response;
 }

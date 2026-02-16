@@ -22,8 +22,6 @@ async def root(response: Response):
 
 
 
-
-
 people = {}
 @app.post("/api/test")
 async def add_person(body: dict = Body(...)):
