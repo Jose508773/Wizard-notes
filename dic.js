@@ -1,60 +1,76 @@
-const googleBtn = document.getElementById("google-login-btn");
-if (googleBtn) {
-    googleBtn.addEventListener("click", async () => {
-        const { data, error } = await db.auth.signInWithOAuth({
-            provider: "google",
-            options: {
-                redirectTo: window.location.origin + "/dic.html",
-                queryParams: {
-                    prompt: "select_account"
-                }
-            }
-        });
-        if (error) alert("Sign-in failed: " + error.message);
-    });
+// Helper to get the current user's access token from localStorage
+// (Supabase stores the session here after OAuth login)
+function getAuthHeaders() {
+    const stored = localStorage.getItem("sb-whgqadoefuwoixylzdwt-auth-token");
+    if (!stored) return {};
+    const session = JSON.parse(stored);
+    const token = session.access_token;
+    if (!token) return {};
+    return { "Authorization": "Bearer " + token };
 }
 
-const form = document.querySelector("form");
-form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const word = document.getElementById("word").value;
-    const definition = document.getElementById("word-def").value;
+// Fetch and display all words
+async function loadWords() {
+    const authHeaders = getAuthHeaders();
+    const list = document.getElementById("words-result");
+    try {
+        const res = await fetch("/api/dictionary", { headers: authHeaders });
+        const result = await res.json();
 
-    const { data, error } = await db
-        .from("dictionary")
-        .insert([{ word, definition }]);
-
-    if (error) {
-        document.getElementById("word-result").textContent = "Error: " + error.message;
-    } else {
-        document.getElementById("word-result").textContent = "✓ Added!";
-        document.getElementById("word").value = "";
-        document.getElementById("word-def").value = "";
-    }
-});
-
-
-const getWordsBtn = document.getElementById("get-words-btn");
-if (getWordsBtn) {
-    getWordsBtn.addEventListener("click", async () => {
-        const { data, error } = await db
-            //supabase checks jwt from browser sent gets the uuid and only returnd row that matces uuid
-
-            .from("dictionary")
-            .select("*")
-            .order("created_at", { ascending: false });
-
-        if (error) {
-            document.getElementById("words-result").textContent = "Error: " + error.message;
+        if (result.error) {
+            list.textContent = "Error: " + result.error;
+        } else if (result.data.length === 0) {
+            list.innerHTML = '<p class="empty-state">No words yet — add your first one above!</p>';
         } else {
-            const list = document.getElementById("words-result");
-            list.innerHTML = ""; // clear previous
-
-            data.forEach(item => {
+            list.innerHTML = "";
+            result.data.forEach(item => {
                 const p = document.createElement("p");
-                p.textContent = `${item.word}: ${item.definition}`;
+                p.innerHTML = `<strong>${item.word}</strong> — ${item.definition}`;
                 list.appendChild(p);
             });
         }
+    } catch (err) {
+        list.textContent = "Error: " + err.message;
+    }
+}
+
+// Load words on page load
+loadWords();
+
+// Add word form
+const form = document.querySelector("form");
+if (form) {
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const word = document.getElementById("word").value;
+        const definition = document.getElementById("word-def").value;
+        const authHeaders = getAuthHeaders();
+
+        try {
+            const res = await fetch("/api/dictionary", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", ...authHeaders },
+                body: JSON.stringify({ word, definition })
+            });
+            const result = await res.json();
+
+            if (result.error) {
+                document.getElementById("word-result").textContent = "Error: " + result.error;
+            } else {
+                document.getElementById("word-result").textContent = "✓ Added!";
+                document.getElementById("word").value = "";
+                document.getElementById("word-def").value = "";
+                // Reload the word list
+                loadWords();
+            }
+        } catch (err) {
+            document.getElementById("word-result").textContent = "Error: " + err.message;
+        }
     });
+}
+
+// Refresh button
+const getWordsBtn = document.getElementById("get-words-btn");
+if (getWordsBtn) {
+    getWordsBtn.addEventListener("click", loadWords);
 }

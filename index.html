@@ -53,8 +53,29 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
-    <script src="dic.js"></script>
+    <script>
+        // After Google sign-in completes, redirect to dictionary
+        db.auth.onAuthStateChange((event, session) => {
+            if (event === "SIGNED_IN" && session) {
+                window.location.href = "/dic.html";
+            }
+        });
 
+        // Google OAuth login
+        const googleBtn = document.getElementById("google-login-btn");
+        if (googleBtn) {
+            googleBtn.addEventListener("click", async () => {
+                const { error } = await db.auth.signInWithOAuth({
+                    provider: "google",
+                    options: {
+                        redirectTo: window.location.origin + "/index.html",
+                        queryParams: { prompt: "select_account" }
+                    }
+                });
+                if (error) alert("Sign-in failed: " + error.message);
+            });
+        }
+    </script>
 
 
 </body>

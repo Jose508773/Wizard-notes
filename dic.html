@@ -7,10 +7,10 @@
     <title>Dictionary</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="login.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
-<body>
+<body class="dic-page">
     <nav class="top-nav">
         <a href="index.html">Home</a>
         <a href="about.html">About</a>
@@ -23,29 +23,36 @@
         <h1>Wizard Dictionary</h1>
     </header>
 
-    <main>
-        <p>Add your words here</p>
+    <main class="dic-main">
+        <!-- Add Word Card -->
+        <section class="dic-card">
+            <h2>📝 Add a Word</h2>
+            <form class="dic-form">
+                <div class="input-group">
+                    <input type="text" id="word" placeholder="Enter a word" required>
+                    <input type="text" id="word-def" placeholder="Enter the definition" required>
+                </div>
+                <button type="submit" id="add-word-btn" class="dic-btn dic-btn-primary">
+                    <span>Add Word</span>
+                </button>
+                <p id="word-result" class="dic-status"></p>
+            </form>
+        </section>
 
-        <form>
-            <input type="text" id="word" placeholder="Enter a word">
-            <input type="text" id="word-def" placeholder="Enter the definition">
-            <button type="submit" id="add-word-btn">Add Word</button>
-            <p id="word-result"></p>
-        </form>
-
-        <button id="get-words-btn">Get Words</button>
-        <p id="words-result"></p>
-
-
+        <!-- Words List Card -->
+        <section class="dic-card">
+            <div class="dic-card-header">
+                <h2>📖 Your Words</h2>
+                <button id="get-words-btn" class="dic-btn dic-btn-secondary">Refresh</button>
+            </div>
+            <div id="words-result" class="words-list"></div>
+        </section>
     </main>
 
-
-    <footer>
+    <footer class="dic-footer">
         <p>Powered by Vercel</p>
     </footer>
-    <!-- Supabase SDK from CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js"></script>
+
     <script src="dic.js"></script>
 </body>
 
