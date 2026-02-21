@@ -1,6 +1,5 @@
 import os
 import json
-import base64
 from http.client import HTTPSConnection
 from urllib.parse import urlparse
 from fastapi import FastAPI, Body, Request
@@ -20,30 +19,16 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
 
 
-def get_user_id(request: Request):
-    auth = request.headers.get("Authorization", "")
-    if not auth.startswith("Bearer "):
-        return None
-    token = auth.split("Bearer ")[1]
-    # Ask Supabase to validate the token and return the user
-    data, status = supabase_request("GET", "/auth/v1/user", token=token)
-    if status >= 400:
-        return None
-    return data.get("id")
-
-
+# ── Helper functions ──────────────────────────────────────────
 
 def supabase_request(method, path, body=None, token=None):
-    """Make a direct REST API call to Supabase."""
+    """Make a REST API call to Supabase and return (data, status)."""
     parsed = urlparse(SUPABASE_URL)
     conn = HTTPSConnection(parsed.hostname)
 
-    # Use the user's token if provided, otherwise use the service key
-    auth_token = token if token else SUPABASE_KEY
-
     headers = {
         "apikey": SUPABASE_KEY,
-        "Authorization": f"Bearer {auth_token}",
+        "Authorization": f"Bearer {token or SUPABASE_KEY}",
         "Content-Type": "application/json",
         "Prefer": "return=representation",
     }
@@ -54,6 +39,19 @@ def supabase_request(method, path, body=None, token=None):
     conn.close()
     return data, res.status
 
+
+def get_user_id(request: Request):
+    """Pull the Bearer token from the request and ask Supabase who the user is."""
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return None
+
+    token = auth.removeprefix("Bearer ")
+    data, status = supabase_request("GET", "/auth/v1/user", token=token)
+    return data.get("id") if status < 400 else None
+
+
+# ── Routes ────────────────────────────────────────────────────
 
 @app.post("/api/dictionary")
 async def add_word(request: Request, body: dict = Body(...)):
@@ -67,13 +65,8 @@ async def add_word(request: Request, body: dict = Body(...)):
     if not word or not definition:
         return {"error": "Both word and definition are required"}
 
-    row = {"word": word, "definition": definition, "user_id": user_id}
-    data, status = supabase_request("POST", "/rest/v1/dictionary", row)
-
-    if status >= 400:
-        return {"error": str(data)}
-
-    return {"success": True, "data": data}
+    data, status = supabase_request("POST", "/rest/v1/dictionary", {"word": word, "definition": definition, "user_id": user_id})
+    return {"error": str(data)} if status >= 400 else {"success": True, "data": data}
 
 
 @app.get("/api/dictionary")
@@ -82,11 +75,5 @@ async def get_words(request: Request):
     if not user_id:
         return {"error": "Not authenticated. Please sign in."}
 
-    # Filter by user_id so each user only sees their own words
-    path = f"/rest/v1/dictionary?select=*&user_id=eq.{user_id}&order=created_at.desc"
-    data, status = supabase_request("GET", path)
-
-    if status >= 400:
-        return {"error": str(data)}
-
-    return {"data": data}
+    data, status = supabase_request("GET", f"/rest/v1/dictionary?select=*&user_id=eq.{user_id}&order=created_at.desc")
+    return {"error": str(data)} if status >= 400 else {"data": data}

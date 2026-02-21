@@ -78,6 +78,32 @@
     </script>
 
 
+    <!-- Background Audio -->
+    <div class="audio-controls"
+        style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;">
+        <audio id="bg-audio" loop>
+            <source src="Whispers_of_the_Verdant_Grove.mp3" type="audio/mpeg">
+        </audio>
+        <button id="audio-toggle"
+            style="background: none; border: none; color: white; cursor: pointer; font-size: 24px;">🔇</button>
+    </div>
+
+    <script>
+        const audio = document.getElementById('bg-audio');
+        const audioToggle = document.getElementById('audio-toggle');
+        let isPlaying = false;
+
+        audioToggle.addEventListener('click', () => {
+            if (isPlaying) {
+                audio.pause();
+                audioToggle.textContent = '🔇';
+            } else {
+                audio.play();
+                audioToggle.textContent = '🔊';
+            }
+            isPlaying = !isPlaying;
+        });
+    </script>
 </body>
 
 </html>
